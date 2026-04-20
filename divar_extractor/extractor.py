@@ -256,9 +256,13 @@ CSV_COLUMNS = [
 ]
 
 
-def listing_to_csv(listing: ExtractedListing, include_header: bool = True) -> str:
+def listing_to_csv(
+    listing: ExtractedListing,
+    include_header: bool = True,
+    delimiter: str = ",",
+) -> str:
     buf = io.StringIO()
-    writer = csv.writer(buf, quoting=csv.QUOTE_MINIMAL)
+    writer = csv.writer(buf, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
     if include_header:
         writer.writerow(CSV_COLUMNS)
     row = [getattr(listing, col) for col in CSV_COLUMNS]
@@ -266,8 +270,13 @@ def listing_to_csv(listing: ExtractedListing, include_header: bool = True) -> st
     return buf.getvalue()
 
 
-def write_listing_csv(listing: ExtractedListing, out: IO[str], include_header: bool = True) -> None:
-    writer = csv.writer(out, quoting=csv.QUOTE_MINIMAL)
+def write_listing_csv(
+    listing: ExtractedListing,
+    out: IO[str],
+    include_header: bool = True,
+    delimiter: str = ",",
+) -> None:
+    writer = csv.writer(out, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
     if include_header:
         writer.writerow(CSV_COLUMNS)
     writer.writerow([getattr(listing, col) for col in CSV_COLUMNS])

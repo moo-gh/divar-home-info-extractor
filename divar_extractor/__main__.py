@@ -1,8 +1,18 @@
 import argparse
+import subprocess
 import sys
 from pathlib import Path
 
-from divar_extractor.extractor import DivarListingExtractor, write_listing_csv
+from divar_extractor.extractor import DivarListingExtractor, listing_to_csv
+
+
+def _copy_to_clipboard_windows(text: str) -> None:
+    """Put text on the clipboard (UTF-16). Tabs survive; terminal copy often breaks them."""
+    subprocess.run(
+        ["clip"],
+        input=text.encode("utf-16"),
+        check=True,
+    )
 
 
 def main() -> None:
@@ -33,6 +43,29 @@ def main() -> None:
         metavar="TEXT",
         help="Line that ends pasted input when using --paste (default: %(default)s).",
     )
+    parser.add_argument(
+        "--tsv",
+        action="store_true",
+        help="Same as --delimiter tab.",
+    )
+    parser.add_argument(
+        "--delimiter",
+        choices=("comma", "tab", "pipe"),
+        default="comma",
+        help=(
+            "Field separator: comma (default), tab, or pipe. "
+            "For Google Sheets: use pipe, paste into one cell, then Data → Split text to "
+            "columns → Separator: custom → |"
+        ),
+    )
+    parser.add_argument(
+        "--clipboard",
+        action="store_true",
+        help=(
+            "Copy the output to the Windows clipboard (UTF-16). "
+            "Use with --delimiter tab so tabs are not lost when copying from the terminal."
+        ),
+    )
     args = parser.parse_args()
     if args.html_file and args.html_file != "-":
         html = Path(args.html_file).read_text(encoding="utf-8")
@@ -48,7 +81,18 @@ def main() -> None:
         html = sys.stdin.read()
     extractor = DivarListingExtractor(html)
     listing = extractor.extract()
-    write_listing_csv(listing, sys.stdout, include_header=not args.no_header)
+    if args.tsv:
+        delim = "\t"
+    else:
+        delim = {"comma": ",", "tab": "\t", "pipe": "|"}[args.delimiter]
+    text = listing_to_csv(listing, include_header=not args.no_header, delimiter=delim)
+    sys.stdout.write(text)
+    if args.clipboard:
+        if sys.platform != "win32":
+            print("--clipboard is only supported on Windows.", file=sys.stderr)
+            sys.exit(1)
+        _copy_to_clipboard_windows(text)
+        print("Copied to clipboard.", file=sys.stderr)
 
 
 if __name__ == "__main__":
