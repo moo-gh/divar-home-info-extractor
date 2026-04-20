@@ -17,7 +17,7 @@ python -m divar_extractor listing.html
 cat listing.html | python -m divar_extractor
 ```
 
-Use `--no-header` if you only want the data row.
+By default only the **data** row is printed. Add `--header` once when you want the column-name row.
 
 ### Copy/paste (no HTML file)
 

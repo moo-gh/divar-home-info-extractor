@@ -25,9 +25,9 @@ def main() -> None:
         help="Path to HTML file, or '-' for stdin (default: stdin if no path)",
     )
     parser.add_argument(
-        "--no-header",
+        "--header",
         action="store_true",
-        help="Omit CSV header row",
+        help="Include the column-name row (use once to label columns, then omit).",
     )
     parser.add_argument(
         "--paste",
@@ -85,7 +85,7 @@ def main() -> None:
         delim = "\t"
     else:
         delim = {"comma": ",", "tab": "\t", "pipe": "|"}[args.delimiter]
-    text = listing_to_csv(listing, include_header=not args.no_header, delimiter=delim)
+    text = listing_to_csv(listing, include_header=args.header, delimiter=delim)
     sys.stdout.write(text)
     if args.clipboard:
         if sys.platform != "win32":
