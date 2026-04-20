@@ -25,6 +25,8 @@ Use `--no-header` if you only want the data row.
 
 Parking and elevator are `yes` / `no` when the page text clearly says دارد / ندارد.
 
+**Title** is taken from `h1.kt-page-title__title` when present. **Publish date** prefers the line `انتشار آگهی: …` inside the info row; otherwise it uses `p.kt-info-row__title` (e.g. «۱ هفته پیش در …»), then `<time>` / meta tags.
+
 ## Library use
 
 ```python

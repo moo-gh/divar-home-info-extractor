@@ -54,6 +54,8 @@ class DivarListingExtractor:
 
     def _extract_title(self) -> str:
         for sel in (
+            "h1.kt-page-title__title",
+            ".kt-page-title__title",
             "h1",
             "h1.kt-title-row__title",
             ".kt-title-row__title--primary",
@@ -73,7 +75,29 @@ class DivarListingExtractor:
                     return _norm_ws(t)
         return ""
 
+    def _extract_publish_date_from_announcement_line(self) -> str:
+        """Parse 'انتشار آگهی: …' from kt-info-row expanded content or any description block."""
+        for el in self._soup.select("p.kt-description-row__text, .kt-description-row__text"):
+            text = el.get_text()
+            if "انتشار" in text and "آگهی" in text:
+                m = re.search(
+                    r"انتشار\s*آگهی\s*:\s*([^\n\r]+?)(?:\s*آخرین|$)",
+                    text,
+                    re.DOTALL,
+                )
+                if m:
+                    return _norm_ws(m.group(1))
+        return ""
+
     def _extract_publish_date(self) -> str:
+        explicit = self._extract_publish_date_from_announcement_line()
+        if explicit:
+            return explicit
+        info_title = self._soup.select_one("p.kt-info-row__title")
+        if info_title:
+            t = _norm_ws(info_title.get_text())
+            if t and re.search(r"\d", t):
+                return t
         for sel in ("time[datetime]", "time", "[class*='post-meta']", "[class*='published']"):
             el = self._soup.select_one(sel)
             if not el:
