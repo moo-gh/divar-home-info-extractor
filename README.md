@@ -19,6 +19,32 @@ cat listing.html | python -m divar_extractor
 
 Use `--no-header` if you only want the data row.
 
+### Copy/paste (no HTML file)
+
+You do **not** need to save HTML to a file.
+
+**macOS — clipboard:** copy the HTML from the browser (e.g. DevTools → copy outer HTML), then:
+
+```bash
+pbpaste | python -m divar_extractor
+```
+
+**stdin — paste in the terminal:** run the command with no file (or with `-`), paste the HTML, then end input with **Ctrl+D** (macOS/Linux) or **Ctrl+Z** then Enter (Windows cmd):
+
+```bash
+python -m divar_extractor
+# or: python -m divar_extractor -
+```
+
+**In Python:** assign your pasted HTML to a string and pass it to the extractor (no file involved):
+
+```python
+from divar_extractor.extractor import DivarListingExtractor, listing_to_csv
+
+html = r"""PASTE_HTML_HERE"""
+print(listing_to_csv(DivarListingExtractor(html).extract()))
+```
+
 ## Output columns
 
 `title`, `publish_date`, `meter`, `creation_year`, `number_of_rooms`, `deposit_price`, `rent_price`, `which_floor`, `has_parking`, `has_elevator`
@@ -37,4 +63,4 @@ listing = DivarListingExtractor(html).extract()
 print(listing_to_csv(listing))
 ```
 
-Save HTML from your browser (full page is best so title and publish date are present).
+For best results, copy HTML from the saved page or DevTools (full markup helps title and publish date).

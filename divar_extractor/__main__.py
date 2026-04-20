@@ -12,7 +12,7 @@ def main() -> None:
     parser.add_argument(
         "html_file",
         nargs="?",
-        help="Path to HTML file (default: read stdin)",
+        help="Path to HTML file, or '-' for stdin (default: stdin if no path)",
     )
     parser.add_argument(
         "--no-header",
@@ -20,7 +20,7 @@ def main() -> None:
         help="Omit CSV header row",
     )
     args = parser.parse_args()
-    if args.html_file:
+    if args.html_file and args.html_file != "-":
         html = Path(args.html_file).read_text(encoding="utf-8")
     else:
         html = sys.stdin.read()
