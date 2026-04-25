@@ -6,13 +6,24 @@ from pathlib import Path
 from divar_extractor.extractor import DivarListingExtractor, listing_to_csv
 
 
-def _copy_to_clipboard_windows(text: str) -> None:
-    """Put text on the clipboard (UTF-16). Tabs survive; terminal copy often breaks them."""
-    subprocess.run(
-        ["clip"],
-        input=text.encode("utf-16"),
-        check=True,
-    )
+def _copy_to_clipboard(text: str) -> None:
+    """Put text on the system clipboard. Tabs survive; terminal copy often breaks them."""
+    if sys.platform == "win32":
+        subprocess.run(
+            ["clip"],
+            input=text.encode("utf-16"),
+            check=True,
+        )
+    elif sys.platform == "darwin":
+        subprocess.run(
+            ["pbcopy"],
+            input=text.encode("utf-8"),
+            check=True,
+        )
+    else:
+        raise RuntimeError(
+            "--clipboard is only supported on Windows and macOS."
+        )
 
 
 def main() -> None:
@@ -62,7 +73,7 @@ def main() -> None:
         "--clipboard",
         action="store_true",
         help=(
-            "Copy the output to the Windows clipboard (UTF-16). "
+            "Copy the output to the system clipboard (Windows: UTF-16 via clip; macOS: UTF-8 via pbcopy). "
             "Use with --delimiter tab so tabs are not lost when copying from the terminal."
         ),
     )
@@ -88,10 +99,11 @@ def main() -> None:
     text = listing_to_csv(listing, include_header=args.header, delimiter=delim)
     sys.stdout.write(text)
     if args.clipboard:
-        if sys.platform != "win32":
-            print("--clipboard is only supported on Windows.", file=sys.stderr)
+        try:
+            _copy_to_clipboard(text)
+        except RuntimeError as exc:
+            print(str(exc), file=sys.stderr)
             sys.exit(1)
-        _copy_to_clipboard_windows(text)
         print("Copied to clipboard.", file=sys.stderr)
 
 
