@@ -90,6 +90,12 @@ def main() -> None:
         html = "".join(lines)
     else:
         html = sys.stdin.read()
+    if not html.strip():
+        print(
+            "divar_extractor: no HTML to parse (empty file or stdin).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     extractor = DivarListingExtractor(html)
     listing = extractor.extract()
     if args.tsv:
